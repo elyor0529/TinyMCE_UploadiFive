@@ -1,0 +1,85 @@
+﻿@{
+  ViewBag.Title = "Home Page";
+}
+
+@section css
+{
+    <link href="~/Scripts/uploadfive/uploadifive.css" rel="stylesheet" />
+}
+<br />
+<br />
+<div class="row">
+    <div class="col-md-12">
+        @using (Html.BeginForm())
+        {
+        @Html.AntiForgeryToken()
+
+        <input type="file" id="postedFile" name="postedFile" />
+        <br />
+        @Html.TextArea("content")
+        <br />
+        <input type="submit" value="Render" class="btn btn-primary btn-lg pull-right" />
+        }
+
+        <hr />
+        <div>
+            @Html.Raw(TempData["content"])
+        </div>
+    </div>
+</div>
+
+@section js
+{
+    <script src="~/Scripts/uploadfive/jquery.uploadifive.min.js"></script>
+    <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+
+            $("#postedFile").uploadifive({
+                "uploadScript": '@Url.Action("Upload")',
+                'method': 'post',
+                'formData': { 'id': '' },
+                'buttonText': 'Select files',
+                'multi': true,
+                'auto': true,
+                'fileType': 'image/*',
+                'fileSizeLimit': 10 * 1000,
+                'fileObjName': 'files',
+                'removeCompleted': true,
+                'queueSizeLimit': 10,
+                'onSelect': function (queue) {
+                    console.log(queue.queued + ' files were added to the queue.');
+                },
+                'onUpload': function (filesToUpload) {
+                    console.log(filesToUpload + ' files will be uploaded.');
+                },
+                'onUploadFile': function (file) {
+                    console.log('The file ' + file.name + ' is being uploaded.');
+                },
+                'onQueueComplete': function (uploads) {
+                    console.log(uploads.successful + ' files were uploaded successfully.');
+                },
+                'onUploadComplete': function (file, data) {
+
+                    console.log('The file ' + file.name + ' uploaded successfully.');
+
+                    var img = "<img src = '" + data + "' />";
+
+                    tinyMCE.activeEditor.execCommand("mceInsertContent", true, img);
+                },
+                'onCancel': function () {
+                    console.log('The file ' + file.name + ' was cancelled!');
+                }
+            });
+
+            tinymce.init({
+                selector: 'textarea',
+                width: $(window).width() * 0.6,
+                plugins: "image imagetools",
+                height: 400
+            });
+
+        });
+    </script>
+}
